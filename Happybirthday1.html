@@ -1,0 +1,829 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Happy Birthday Markgreat</title>
+
+  <!-- Swiper CSS (load once) -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
+
+  <style>
+    /* ---------- GLOBAL RESET & LAYOUT ---------- */
+    *,*::before,*::after{box-sizing:border-box}
+    html,body{width:100%;height:100%;margin:0;padding:0;overflow-x:hidden;font-family:'Comic Sans MS',cursive,sans-serif;background:#fff;}
+    :root{
+      --accent:#ff4d6d;
+      --pink:#FF1493;
+      --muted:#f7f4f6;
+      --text:#333;
+    }
+
+    /* container for each part */
+    .section {
+      display:none;
+      min-height:100dvh;
+      padding:16px;
+      box-sizing:border-box;
+      position:relative;
+      overflow-y:auto;          /* allow vertical scroll */
+      -webkit-overflow-scrolling:touch;
+      background: transparent;
+    }
+    /* Only the active section shows and uses flex layout. */
+    .section.active{
+      display:flex;
+      flex-direction:column;
+    }
+
+    /* central page headings */
+    h1 {
+      font-size:1.6rem;
+      margin:12px 0 18px;
+      text-align:center;
+      padding:0 12px;
+      color:var(--text);
+      word-wrap:break-word;
+    }
+
+    /* nav button (sticky near bottom inside section) */
+    .nav-btn{
+      position:sticky;
+      bottom:12px;
+      z-index:60;
+      display:inline-block;
+      margin:18px auto 6px;
+      padding:12px 22px;
+      width:90%;
+      max-width:360px;
+      background:var(--accent);
+      color:#fff;
+      border:none;
+      border-radius:10px;
+      font-size:1rem;
+      cursor:pointer;
+      box-shadow:0 6px 18px rgba(0,0,0,0.12);
+      text-align:center;
+    }
+
+    /* make all media responsive by default */
+    img,video,iframe,canvas{
+      max-width:100% !important;
+      height:auto !important;
+      display:block;
+      margin:10px auto;
+      border-radius:10px;
+    }
+
+    /* Small helper for captions */
+    .caption{padding:8px 12px;text-align:center;color:var(--text)}
+
+    /* ---------- PART 1: CAKE (styles adapted) ---------- */
+    /* background for part1 only - removed 'display' to avoid overriding .section rule */
+    #part1 {
+      background: linear-gradient(180deg, #ff9a9e 0%, #fad0c4 100%);
+      /* keep layout controlled by .section.active */
+      align-items:center;
+      justify-content:center;
+      padding:20px;
+    }
+
+    .birthday-message{
+      font-size:1.8rem;
+      font-weight:700;
+      color:#fff;
+      text-shadow:2px 2px 8px rgba(0,0,0,0.35);
+      margin-bottom:40px;
+      text-align:center;
+      max-width:92%;
+      word-wrap:break-word;
+      animation:glow 2s ease-in-out infinite alternate;
+      position: relative;     /* needed to move text up */
+      top: -15px;
+    }
+    @keyframes glow{
+      from{ text-shadow:2px 2px 8px rgba(0,0,0,0.3),0 0 10px #fff; }
+      to{ text-shadow:2px 2px 8px rgba(0,0,0,0.3),0 0 25px #FF1493,0 0 35px #FFD700; }
+    }
+
+    .cake-container{ position:relative; width:92%; max-width:600px; display:flex; flex-direction:column; align-items:center; z-index:2;}
+    .cake{ width:100%; height:auto; border-radius:12px; box-shadow:0 10px 30px rgba(0,0,0,0.25); }
+    .flame{ position:absolute; width:20px; height:40px; top:-30px; background: radial-gradient(circle,#ff6b35,#f7931e,#ffcc02); border-radius:50% 50% 50% 50% / 60% 60% 40% 40%; animation:flicker .5s infinite alternate; box-shadow:0 0 18px #ff6b35;}
+    .flame::before{content:'';position:absolute;top:8%;left:50%;transform:translateX(-50%);width:12px;height:25px;background:radial-gradient(circle,#ffcc02,#f7931e);border-radius:50%}
+    @keyframes flicker{0%{transform:translateY(0) scale(1)}25%{transform:translateY(-3px) scale(1.05)}50%{transform:translateY(-1px) scale(1.1)}75%{transform:translateY(-2px) scale(1.03)}100%{transform:translateY(0) scale(1)}}
+
+    .sparkle-btn{ margin-top:18px;padding:12px 22px;border-radius:50px;border:none;background:linear-gradient(45deg,#FF1493,#8A2BE2);color:#fff;font-weight:700; cursor:pointer; box-shadow:0 6px 20px rgba(255,20,147,0.3) }
+    .sparkle-btn:active{ transform:translateY(1px) }
+
+    /* floating pieces - keep inside section via JS append */
+    .confetti{ position:absolute;font-size:20px;pointer-events:none;z-index:50;opacity:0.95 }
+    .balloon{ position:absolute; bottom:-150px; width:50px; height:70px; border-radius:50%; opacity:0.95; cursor:pointer }
+    .balloon::after{ content:''; position:absolute; width:2px; height:30px; background:#333; left:50%; bottom:-30px}
+    .red{ background:#FF4B5C } .blue{ background:#4A90E2 } .yellow{ background:#FFD700 } .green{ background:#32CD32 } .pink{ background:#FF69B4 }
+    .light{ position:absolute; width:12px; height:12px; border-radius:50%; box-shadow:0 0 15px #fff,0 0 25px #fff; top:20px; z-index:40 }
+
+    /* ---------- PART 2: VIDEO FLIPBOOK (styles) ---------- */
+    #part2 { background: linear-gradient(135deg,#ffefeF,#fde6ea); padding-bottom:80px; }
+    .video-flipbook-section{ padding:16px 10px; display:flex; flex-direction:column; align-items:center }
+    .video-swiper { width:95%; max-width:1000px; background:#fff; border-radius:16px; box-shadow:0 25px 50px -12px rgba(0,0,0,0.12); overflow:hidden;}
+    .video-slide{ padding:18px; display:flex; flex-direction:column; align-items:center; justify-content:center }
+    .video-container { width:100%; max-width:900px; border-radius:12px; overflow:hidden; background:#000; box-shadow:0 6px 18px rgba(0,0,0,0.15)}
+    .video-container video{ width:100%; height:auto; display:block; object-fit:contain }
+    .video-caption{ padding:12px 14px; color:var(--text) }
+    .video-title{ color:var(--pink); font-size:1.3rem; margin-bottom:6px }
+    .video-note{ font-size:1rem; color:var(--text) }
+
+    /* ---------- PART 3: LETTER FLIPBOOK (styles) ---------- */
+    /* removed display:flex here to avoid overriding .section */
+    #part3 { background: linear-gradient(135deg,#fff7fa,#fffdf6); padding-bottom:80px; justify-content:flex-start; align-items:center; }
+    .flipbook-container{ width:95%; max-width:900px; padding:12px 0 }
+    .mySwiper .swiper-slide{ background:#fff; border-radius:14px; padding:18px; box-shadow:0 18px 40px rgba(0,0,0,0.08); display:flex; flex-direction:column; align-items:center }
+    .image-container{ width:100%; height:55vh; max-height:520px; border-radius:12px; overflow:hidden; display:flex; align-items:center; justify-content:center; background:#fafafa; border:1px solid rgba(0,0,0,0.04)}
+    .page-image{ max-width:100%; max-height:100%; object-fit:contain; transition:transform .2s ease }
+    .text-content{ padding:12px; text-align:center }
+    .page-title{ color:var(--pink); font-size:1.25rem; margin-bottom:8px }
+    .page-note{ font-size:1rem; color:var(--text) }
+    .special-message{ font-size:1.3rem; color:var(--pink); white-space:normal; margin-top:12px }
+
+    /* ---------- PART 4: FINAL SURPRISE (styles) ---------- */
+    /* removed display:flex here to avoid overriding .section */
+    #part4 { background: linear-gradient(135deg,#fbefff,#fff0f5); align-items:center; justify-content:center; padding:24px; }
+    .letter-box{ background:#fff; padding:20px; border-radius:16px; box-shadow:0 12px 30px rgba(0,0,0,.08); width:95%; max-width:720px; text-align:center }
+    .letter-box h2{ color:var(--accent); font-size:1.4rem; margin-bottom:12px }
+    .letter-box p{ color:var(--text); font-size:1rem; text-align:left; white-space:pre-wrap; min-height:120px; line-height:1.6 }
+    .heart{ position:fixed; top:-2rem; left:0; font-size:clamp(18px,2.4vw,28px); pointer-events:none; z-index:10; animation:heartFall var(--dur,4s) linear forwards }
+    @keyframes heartFall{ 0%{ transform:translate(calc(var(--x) - 50vw), -10vh) rotate(0deg); opacity:0 } 10%{opacity:1} 100%{ transform:translate(calc(var(--x) - 50vw + var(--drift)), 110vh) rotate(var(--rot,360deg)); opacity:.95 } }
+
+    /* ---------- RESPONSIVE TWEAKS ---------- */
+    @media (max-width:768px){
+      .birthday-message{ font-size:1.7rem }
+      .image-container{ height:48vh }
+      .video-title{ font-size:1.1rem }
+      .page-title{ font-size:1.1rem }
+      .letter-box p{ font-size:.98rem }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- MASTER NAV / SECTIONS -->
+  <!-- Part 1: Cake -->
+  <div id="part1" class="section active">
+
+    <!-- keep only inner content from the original part1 -->
+    <div class="birthday-message">🎉 Happy Birthday Markgreat! 🎉</div>
+
+    <div class="cake-container">
+      <img src="cake.png" alt="Birthday Cake" class="cake" />
+      <div class="flame" style="left:20%"></div>
+      <div class="flame" style="left:40%"></div>
+      <div class="flame" style="left:60%"></div>
+      <div class="flame" style="left:80%"></div>
+
+      <button class="sparkle-btn" id="sparkleBtn">🎉 Make it Sparkle! ✨</button>
+    </div>
+
+    <!-- FIXED: Part1 should go to Video (part2) -->
+    <button class="nav-btn" onclick="nextSection('part2')">Next → Video Flip</button>
+  </div>
+
+  <!-- Part 2: Video Flipbook -->
+  <div id="part2" class="section">
+
+    <div class="video-flipbook-section">
+      <div class="video-swiper swiper">
+        <div class="swiper-wrapper">
+          <!-- slide 1 -->
+          <div class="swiper-slide video-slide">
+            <div class="video-container">
+              <video controls preload="none" poster="video1-poster.jpg">
+                <source src="video1.mp4" type="video/mp4" />
+              </video>
+            </div>
+            <div class="video-caption">
+              <h3 class="video-title">Happy Birthday Markgreat</h3>
+              <p class="video-note">“On this special day, I pray that 
+                                the universe blesses you with all that your heart desires. 
+                                May every wish you hold, every dream you cherish, and 
+                                every hope you quietly nurture come true. 
+                                May your days be filled with laughter, 
+                                your heart with peace, and your life with 
+                                the kind of happiness that stays forever.” ❤️</p>
+            </div>
+          </div>
+
+          <!-- slide 2 -->
+          <div class="swiper-slide video-slide">
+            <div class="video-container">
+              <video controls preload="none" poster="video2-poster.jpg">
+                <source src="video2.mp4" type="video/mp4" />
+              </video>
+            </div>
+            <div class="video-caption">
+              <h3 class="video-title">Not everything has to make sense to make sense</h3>
+              <p class="video-note">“Here is something that describes you and your inner feelings.
+                                Maybe at times you’ve wanted to say this to someone, or even to yourself.
+                                Or maybe it’s just my thought, maybe even my delusion.
+                                But still… here it is.”</p>
+            </div>
+          </div>
+
+          <!-- slide 3 -->
+          <div class="swiper-slide video-slide">
+            <div class="video-container">
+                <video controls preload="none">
+                    <source src="video3.mp4" type="video/mp4">
+                </video>
+                </div>
+            <div class="video-caption">
+              <h3 class="video-title">Only You and Me(Him)</h3>
+              <p class="video-note">“Tum soch rahe hoge… maine tum mein aisa kya dekha,
+                                ki bas kuch lamhon mein itni gir gayi?
+                                Toh suno…
+                                Maine tum mein dekha ek khuda ka darr,
+                                jo mujhe jannat ke raaste tak le ja sakta hai.
+                                Maine dekha ek asal khoobsurti,
+                                jo apne dil mein ek anjaan aurat ke liye bhi adab rakhta hai.
+                                Maine dekha koi,
+                                jo mere bachpane ko bhi samajhta hai,
+                                pyaar se, nazakat se.
+                                Maine dekha ek saaf dil insaan,
+                                jo sach bolne se ghabrata nahi,
+                                jo bhola hai, par jhooth se paak hai,
+                                jo bina wajah kisi ko judge nahi karta.
+                                Aur isliye…
+                                mujhe sirf tum chahiye.
+                                Na tumhara koi clone,
+                                na koi doosra.
+                                Bas tum… tum hi.”</p>
+            </div>
+        </div>
+          <!-- slide 4 -->
+          <div class="swiper-slide video-slide">
+            <div class="video-container">
+                <video controls preload="none">
+                    <source src="video4.mp4" type="video/mp4">
+                </video>
+                 </div>
+                        <div class="video-caption">
+                            <h3 class="video-title">Love Is Not About Perfection</h3>
+                            <p class="video-note">“You don’t need a perfect relationship… 
+                                You just need someone who is scared to lose you, 
+                                respect your efforts, proud to have you, and need you the most. 
+                                Sometimes you just want to say...
+                                I don’t want to be your everything… 
+                                I just want to be your something that 
+                                cannot be replaced by anything.”</p>
+            </div>
+        </div>
+          <!-- slide 5 -->
+          <div class="swiper-slide video-slide">
+            <div class="video-container">
+                <video controls preload="none">
+                    <source src="video5.mp4" type="video/mp4">
+                </video>
+                 </div>
+                        <div class="video-caption">
+                            <h3 class="video-title">Why don’t they understand?</h3>
+                            <p class="video-note">“All we really want is love.
+                                If we can give it, then why can’t they?”</p>
+            </div>
+            </div>
+          <!-- slide 6 -->
+          <div class="swiper-slide video-slide">
+            <div class="video-container">
+                <video controls preload="none">
+                    <source src="video6.mp4" type="video/mp4">
+                </video>
+                 </div>
+                        <div class="video-caption">
+                            <h3 class="video-title">Why am I(you) so sensitive?</h3>
+                            <p class="video-note">“Sometimes You wonder—why is it always me who has to understand?
+                                Why does the burden always fall on me?
+                                Why am I the one who has to hold everything together?”</p>
+            </div>
+        </div>
+          <!-- slide 7 -->
+          <div class="swiper-slide video-slide">
+            <div class="video-container">
+                <video controls preload="none">
+                    <source src="video7.mp4" type="video/mp4">
+                </video>
+                 </div>
+                        <div class="video-caption">
+                            <h3 class="video-title">You will always wait for him</h3>
+                            <p class="video-note">“No matter how harsh the journey becomes…
+                                and that is what we call love.” </p>
+            </div>
+        </div>
+          <!-- slide 8 -->
+          <div class="swiper-slide video-slide">
+            <div class="video-container">
+                <video controls preload="none">
+                    <source src="video8.mp4" type="video/mp4">
+                </video>
+                 </div>
+                        <div class="video-caption">
+                            <h3 class="video-title">Just surviving</h3>
+                            <p class="video-note">“Sometimes it feels like nothing ever changes…
+                                and when it does, it only gets worse.”</p>
+            </div>
+        </div>
+          <!-- slide 9 -->
+          <div class="swiper-slide video-slide">
+            <div class="video-container">
+                <video controls preload="none">
+                    <source src="video9.mp4" type="video/mp4">
+                </video>
+                </div>
+                        <div class="video-caption">
+                            <h3 class="video-title">Just remember one thing</h3>
+                            <p class="video-note">“You are the best—never, ever doubt yourself.” </p>
+            </div>
+        </div>
+          <!-- slide 10 -->
+          <div class="swiper-slide video-slide">
+            <div class="video-container">
+                <video controls preload="none" poster="video10-poster.jpg">
+                    <source src="video10.mp4" type="video/mp4">
+                </video>
+                 </div>
+                        <div class="video-caption">
+                            <h3 class="video-title">I Just want to tell you... Enjoy</h3>
+                            <p class="video-note">“We take life too seriously, drowning in tension and worry.
+                                But compared to the universe, what are we?
+                                A speck on a tiny planet, in a fleeting moment of time.
+                                Everyday, countless lives end,
+                                many go unfed, some lose their loved ones,
+                                others discover their days are numbered,
+                                someone is fired, someone is heartbroken.
+                                If the world carries so much weight already,
+                                why add more with our own intensity?
+                                Live lightly, breathe freely—
+                                life was never meant to be carried like a burden.”</p>
+            </div>
+        </div>
+
+        </div>
+
+        <!-- navigation -->
+        <div class="swiper-button-next"></div>
+        <div class="swiper-button-prev"></div>
+        <div class="swiper-pagination"></div>
+      </div>
+    </div>
+
+    <!-- FIXED: Part2 should go to Letter Flip (part3) -->
+    <button class="nav-btn" onclick="nextSection('part3')">Next → Letter Flip</button>
+  </div>
+
+  <!-- Part 3: Letter Flipbook -->
+  <div id="part3" class="section">
+
+    <div class="flipbook-container">
+      <div class="swiper mySwiper">
+        <div class="swiper-wrapper">
+          <!-- Slide 1 -->
+          <div class="swiper-slide">
+            <div class="image-container"><img src="image1.jpg" class="page-image" alt="Memory 1" /></div>
+            <div class="text-content">
+              <div class="page-title">Curiosity can lead to intimacy</div>
+              <div class="page-note">“I always realized… you aren’t just a person to me. 
+                            You are like a therapy for anyone who talks to you. 
+                            Everyone wants to speak with you because your presence brings comfort and calm. 
+                            You are such a grounded, beautiful soul that talking to you makes it feel like everything will be okay.”</div>
+            </div>
+          </div>
+
+          <!-- Slide 2 -->
+          <div class="swiper-slide">
+            <div class="image-container"><img src="image2.jpg" class="page-image" alt="Memory 2" /></div>
+            <div class="text-content">
+                <div class="page-title">Shades of Love</div>
+                <div class="page-note">“Everyone carries their own meaning of love.
+                            For some, it’s comfort; for others, it’s madness.
+                            For one, it’s care; for another, it’s freedom.
+                            But in truth, love is not a single definition —
+                            it is the reflection of what your heart needs the most.”</div>
+            </div>
+          </div>
+
+          <!-- Slide 3..11 -->
+          <!-- Slide 3 -->
+          <div class="swiper-slide">
+            <div class="image-container"><img src="image3.jpg" class="page-image"></div>
+            <div class="text-content">
+                <div class="page-title">is it Curiosity</div>
+                <div class="page-note">“No matter what, let’s go.”</div>
+            </div>
+        </div>
+        <!-- Slide 4 -->
+          <div class="swiper-slide">
+            <div class="image-container"><img src="image4.jpg" class="page-image"></div>
+            <div class="text-content">
+                <div class="page-title">🌸💗🌸</div>
+                <div class="page-note">“ 🌟 — 👑 — 🦋 — 💎 — 🌹 — 🤍 — 🌞 — 🕊️ ”</div>
+            </div>
+        </div>
+          <!-- Slide 5 -->
+           <div class="swiper-slide">
+            <div class="image-container"><img src="image5.jpg" class="page-image"></div>
+            <div class="text-content">
+                <div class="page-title">Essence of a girl</div>
+                <div class="page-note">“Love makes a person complete; it’s the most beautiful feeling. 
+                            To love someone is human; to be loved back is beautiful;
+                            and to be wanted even without returning it — that’s destiny’s rarest gift.
+                            Love doesn’t bring pain, our attachment does.”</div>
+            </div>
+        </div>
+          <!-- Slide 6 -->
+           <div class="swiper-slide">
+            <div class="image-container"><img src="image6.jpg" class="page-image"></div>
+            <div class="text-content">
+                <div class="page-title">The Perfect</div>
+                <div class="page-note">“You are the very definition of perfection. 
+                            No single word could ever truly capture who you are. 
+                            You’re simply beyond — beyond limits, beyond description. 
+                            Maybe you don’t see it, but you are. 
+                            A truly unique, rare, and amazing soul.”</div>
+            </div>
+        </div>
+          <!-- Slide 7 -->
+           <div class="swiper-slide">
+            <div class="image-container"><img src="image7.jpg" class="page-image"></div>
+            <div class="text-content">
+                <div class="page-title">You are the purest Soul</div>
+                <div class="page-note">“you are like an angel wrapped in silence.
+                            Secretive yet pure, you keeps your world within yourself. 
+                            Careful with your words, gentle with your reactions, 
+                            you observes everything like a quiet star. 
+                            Sometimes, you feels like a mystery, 
+                            and that’s why you shines even brighter.”</div>
+            </div>
+        </div>
+          <!-- Slide 8 -->
+           <div class="swiper-slide">
+            <div class="image-container"><img src="image8.jpg" class="page-image"></div>
+            <div class="text-content">
+                <div class="page-title">Kindred spirit</div>
+                <div class="page-note">“For me, you are like an Anam Cara — not just a person, 
+                            but someone I feel deeply connected to, 
+                            beyond explanations or reasons.”</div>
+            </div>
+        </div>
+          <!-- Slide 9 -->
+           <div class="swiper-slide">
+            <div class="image-container"><img src="image9.jpg" class="page-image"></div>
+            <div class="text-content">
+                <div class="page-title">I hold you in reverence:</div>
+                <div class="page-note">“— A rare blend of respect, admiration, and honor. 
+                            It’s not about love in the usual sense, 
+                            but about valuing the person you are and the light you carry. 
+                            To me, your presence naturally commands both respect and warmth.”</div>
+            </div>
+        </div>
+          <!-- Slide 10 -->
+           <div class="swiper-slide">
+            <div class="image-container"><img src="image10.jpg" class="page-image"></div>
+            <div class="text-content">
+                <div class="page-title">You are my lodestar:</div>
+                <div class="page-note">“— Like the North Star that guides lost ships across the sea. 
+                            You inspire me, you give me direction, 
+                            and in so many ways you’ve been a light I can look up to, 
+                            a role model whose presence quietly shows me the way.”</div>
+            </div>
+        </div>
+          <!-- Slide 11-->
+           <div class="swiper-slide">
+            <div class="image-container"><img src="image11.jpg" class="page-image"></div>
+            <div class="text-content">
+                <div class="page-title">Once again, Happy Birthday Markgreat!</div>
+                <div class="special-message">“May all your dreams come true!” 🎉💖</div>
+            </div>
+        </div>
+
+        </div>
+
+        <!-- controls -->
+        <div class="swiper-button-next"></div>
+        <div class="swiper-button-prev"></div>
+        <div class="swiper-pagination"></div>
+      </div>
+    </div>
+
+    <!-- FIXED: Part3 should go to Final Surprise (part4) -->
+    <button class="nav-btn" onclick="nextSection('part4')">Next → One last slide</button>
+  </div>
+
+  <!-- Part 4: Final Surprise -->
+  <div id="part4" class="section">
+    
+    <div class="letter-box">
+      <h2>Last but not the Least 💌</h2>
+      <p id="message"></p>
+      <button id="surpriseBtn">Please Click</button>
+      <h3 id="extraMessage" style="display:none;margin-top:12px">You are The Best 💖</h3>
+    </div>
+
+    <button class="nav-btn" onclick="nextSection('part1')">Back to Start</button>
+  </div>
+
+  <!-- SCRIPTS (load once) -->
+  <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+
+  <script>
+    /* ---------- Navigation between sections (improved) ---------- */
+    function nextSection(id){
+      // pause media in current active section before switching
+      const prev = document.querySelector('.section.active');
+      if(prev){
+        prev.querySelectorAll('video').forEach(v => { try { v.pause(); } catch(e){} });
+      }
+
+      document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+      const target = document.getElementById(id);
+      if(!target) return;
+      target.classList.add('active');
+
+      // reset scroll of the newly active section
+      target.scrollTop = 0;
+      window.scrollTo({top:0,behavior:'instant'});
+
+      // small delay then update swipers (they often need to be told to re-layout after becoming visible)
+      setTimeout(()=>{
+        try {
+          if(id === 'part2' && typeof videoSwiper !== 'undefined' && videoSwiper) videoSwiper.update();
+          if(id === 'part3' && typeof flipSwiper !== 'undefined' && flipSwiper) flipSwiper.update();
+        } catch(err){}
+      }, 250);
+    }
+
+    /* ---------- Utility: append elements into active section instead of document.body ---------- */
+    function appendToActiveSection(node){
+      const active = document.querySelector('.section.active') || document.body;
+      return active.appendChild(node);
+    }
+
+    /* ---------- PART 1 SCRIPTS: confetti/balloons/lights (fixed to use active section and clamp positions) ---------- */
+    (function part1Effects(){
+      // Make sparkle button create confetti icons inside active section (not body)
+      const sparkleBtn = document.getElementById('sparkleBtn');
+      function makeSparkle(){
+        const colors = ['#FF1493','#FFD700','#8A2BE2','#FF4500','#00BFFF','#32CD32','#FF69B4','#FFA500'];
+        const shapes = ['✨','⭐','💖','🌟','🎊','💫','🔥','🎈','🎁','🍰'];
+        const width = (document.querySelector('.section.active') || document.body).clientWidth;
+        for(let i=0;i<60;i++){
+          const confetti = document.createElement('div');
+          confetti.className = 'confetti';
+          confetti.textContent = shapes[Math.floor(Math.random()*shapes.length)];
+          confetti.style.color = colors[Math.floor(Math.random()*colors.length)];
+          // keep inside active section width
+          const left = Math.random()*(width-30);
+          confetti.style.left = left + 'px';
+          confetti.style.top = '-20px';
+          confetti.style.opacity = '0';
+          appendToActiveSection(confetti);
+
+          const fallDuration = 2000 + Math.random()*2000;
+          confetti.animate([
+            { transform: 'translateY(0) scale(.6)', opacity: 0 },
+            { transform: `translateY(${window.innerHeight/1.5}px) scale(1)`, opacity: 1 },
+            { transform: `translateY(${window.innerHeight + 50}px) scale(.4)`, opacity: 0 }
+          ],{ duration: fallDuration, easing:'cubic-bezier(.25,.46,.45,.94)'});
+          setTimeout(()=>confetti.remove(), fallDuration+100);
+        }
+      }
+      sparkleBtn && sparkleBtn.addEventListener('click', makeSparkle);
+
+      // Balloons and lights — appended to active section so they don't overflow page
+      const balloonColors = ['red','blue','yellow','green','pink'];
+      let balloonAnimations = [];
+      let balloons = [];
+      let lightAnimations = [];
+      let lights = [];
+
+      function spawnBalloons(){
+        const container = document.querySelector('.section.active') || document.body;
+        const width = container.clientWidth;
+        for(let i=0;i<14;i++){
+          const b= document.createElement('div');
+          b.className = 'balloon ' + balloonColors[Math.floor(Math.random()*balloonColors.length)];
+          b.style.left = Math.random()*(width-60) + 'px';
+          appendToActiveSection(b);
+          balloons.push(b);
+          // animate using gsap if available else basic CSS
+          if(window.gsap){
+            const anim = gsap.to(b, { y: -(window.innerHeight + 200), duration: 10 + Math.random()*6, repeat: -1, ease:'sine.inOut', delay: Math.random()*6, onRepeat: ()=> { b.style.left = Math.random()*(width-60)+'px' }});
+            balloonAnimations.push(anim);
+          } else {
+            // fallback simple CSS transform loop
+            b.style.transition = 'transform 14s linear';
+            setTimeout(()=> b.style.transform = `translateY(${-(window.innerHeight+300)}px)`,50);
+          }
+          b.addEventListener('click', ()=> { b.remove(); });
+        }
+      }
+
+      function spawnLights(){
+        const container = document.querySelector('.section.active') || document.body;
+        const width = container.clientWidth;
+        for(let i=0;i<12;i++){
+          const L = document.createElement('div');
+          L.className = 'light';
+          L.style.left = Math.random()*(width-20) + 'px';
+          L.style.top = Math.random()*120 + 'px';
+          const hue = Math.random()*360;
+          L.style.background = `hsl(${hue},90%,65%)`;
+          appendToActiveSection(L);
+          lights.push(L);
+          if(window.gsap){
+            const anim = gsap.to(L, { opacity: 0.3 + Math.random()*0.7, scale: 0.5 + Math.random()*0.8, duration: 0.5 + Math.random(), repeat:-1, yoyo:true, ease:'sine.inOut' });
+            lightAnimations.push(anim);
+          }
+        }
+      }
+
+      // spawn, then remove after 20s
+      spawnBalloons();
+      spawnLights();
+      setTimeout(()=> {
+        balloonAnimations.forEach(a=>a.kill && a.kill());
+        lightAnimations.forEach(a=>a.kill && a.kill());
+        balloons.forEach(b=>b.remove());
+        lights.forEach(l=>l.remove());
+      },20000);
+    })();
+
+
+    /* ---------- PART 2: SWIPER VIDEO ---------- */
+    let videoSwiper;
+    (function initVideoSwiper(){
+      const el = document.querySelector('#part2 .video-swiper');
+      if(!el) return;
+      videoSwiper = new Swiper(el, {
+        effect:'coverflow',
+        grabCursor:true,
+        centeredSlides:true,
+        slidesPerView:'auto',
+        coverflowEffect:{ rotate:5,stretch:0,depth:120,modifier:1.5,slideShadows:false },
+        pagination:{ el: '#part2 .swiper-pagination', clickable:true, dynamicBullets:true },
+        navigation:{ nextEl:'#part2 .swiper-button-next', prevEl:'#part2 .swiper-button-prev' },
+        keyboard:true,
+        breakpoints:{ 640:{ coverflowEffect:{ rotate:10, depth:200 } } }
+      });
+
+      // lazy load first
+      const first = el.querySelector('video');
+      if(first){ first.load(); first.classList.add('loaded'); }
+
+      // pause others when slide changes
+      videoSwiper.on('slideChange', () => {
+        document.querySelectorAll('#part2 .video-container video').forEach(v=> v.pause());
+        const active = document.querySelectorAll('#part2 .swiper-slide')[videoSwiper.activeIndex];
+        const vid = active && active.querySelector('video');
+        if(vid && !vid.classList.contains('loaded')){ vid.load(); vid.classList.add('loaded'); }
+        // confetti on last slide
+        if(videoSwiper.activeIndex === (videoSwiper.slides.length -1)) {
+          confetti({ particleCount: 120, spread:100, origin:{y:0.6}, colors:['#FF1493','#FFD700','#00BFFF','#32CD32']});
+        }
+      });
+
+      // toggle play on click
+      document.querySelectorAll('#part2 .video-container video').forEach(v=>{
+        v.addEventListener('click', ()=> { if(v.paused) v.play(); else v.pause(); });
+      });
+    })();
+
+
+    /* ---------- PART 3: LETTER FLIPBOOK SWIPER ---------- */
+    let flipSwiper;
+    (function initFlipbook(){
+      const el = document.querySelector('#part3 .mySwiper');
+      if(!el) return;
+      flipSwiper = new Swiper(el, {
+        effect:'coverflow',
+        grabCursor:true,
+        centeredSlides:true,
+        slidesPerView:'auto',
+        coverflowEffect:{ rotate:5, stretch:0, depth:100, modifier:1.6, slideShadows:false },
+        pagination:{ el: '#part3 .swiper-pagination', clickable:true, dynamicBullets:true },
+        navigation:{ nextEl:'#part3 .swiper-button-next', prevEl:'#part3 .swiper-button-prev' },
+        keyboard:true,
+        breakpoints:{ 640:{ coverflowEffect:{ rotate:10, depth:200 } } }
+      });
+
+      // small interactive bells
+      document.querySelectorAll('#part3 .page-image').forEach(img=>{
+        img.addEventListener('click', ()=> {
+          confetti({ particleCount: 30, spread: 60, origin:{ y: 0.3 }, colors:['#FF1493','#FFD700','#32CD32'] });
+          img.style.transform = 'scale(.98)';
+          setTimeout(()=> img.style.transform = '', 220);
+        });
+      });
+
+      // on last slide celebration
+      flipSwiper.on('slideChange', ()=> {
+        if(flipSwiper.activeIndex === flipSwiper.slides.length -1) {
+          for(let i=0;i<3;i++){
+            setTimeout(()=> confetti({ particleCount:80, spread:100, origin:{y:0.6} }), i*400);
+          }
+        }
+      });
+    })();
+
+
+    /* ---------- PART 4: FINAL SURPRISE SCRIPTS ---------- */
+    (function part4Scripts(){
+      // typewriter
+      const messageText = `I don't know why but there’s one thing I truly want you to know:
+I know You don't need anyone, but You can always share anything with me. 
+Never think you are disturbing me or oversharing—because I will always listen. 
+And I don’t just say this casually; I genuinely mean it from the heart. 
+Inshallah, may you never face any hardship in life. 
+May you always receive what you wish for. 
+And Allah grant you the very best, both in this world and in the Hereafter, 
+with the highest of ranks and the most beautiful of blessings.
+
+And at the end… I just want you to smile, celebrate, and enjoy your day to the fullest.
+Once again "Happy Birthday Markgreat", 
+for me you will always be special💖`;
+      let idx = 0;
+      function typeWriter(){
+        const el = document.getElementById('message');
+        if(!el) return;
+        if(idx < messageText.length){
+          el.innerHTML += messageText.charAt(idx);
+          idx++;
+          setTimeout(typeWriter, 28);
+        }
+      }
+      // start typing when part4 becomes active
+      document.querySelectorAll('.nav-btn, .nav-btn').forEach(b=> b.addEventListener('click', ()=> {
+        // small delay then check
+        setTimeout(()=> {
+          if(document.getElementById('part4').classList.contains('active')){
+            document.getElementById('message').innerHTML = '';
+            idx = 0;
+            typeWriter();
+          }
+        },50);
+      }));
+
+      // surprise button & heart rain
+      function burstConfetti(duration=4500){
+        const end = Date.now() + duration;
+        (function frame(){
+          confetti({ particleCount:6, angle:60, spread:55, origin:{x:0}, colors:['#ff4d6d','#ffcc00','#ff66b3','#ffffff']});
+          confetti({ particleCount:6, angle:120, spread:55, origin:{x:1}, colors:['#ff4d6d','#ffcc00','#ff66b3','#ffffff']});
+          if(Date.now() < end) requestAnimationFrame(frame);
+        })();
+      }
+
+      function startHeartRain(duration=4500, rateMs=120){
+        const emojis = ['❤️','💖','💕','💞'];
+        const start = Date.now();
+        const spawn = () => {
+          const heart = document.createElement('div');
+          heart.className = 'heart';
+          heart.textContent = emojis[Math.floor(Math.random()*emojis.length)];
+          const x = Math.random()*100;
+          const drift = (Math.random()*60 - 30) + 'px';
+          const rot = (Math.random()*540 - 270) + 'deg';
+          const dur = (3 + Math.random()*2) + 's';
+          heart.style.setProperty('--x', x + 'vw');
+          heart.style.setProperty('--drift', drift);
+          heart.style.setProperty('--rot', rot);
+          heart.style.setProperty('--dur', dur);
+          heart.style.left = x + 'vw';
+          document.body.appendChild(heart);
+          const ms = parseFloat(dur) * 1000;
+          setTimeout(()=> heart.remove(), ms + 300);
+        };
+        const interval = setInterval(()=> {
+          if(Date.now() - start > duration){ clearInterval(interval); return; }
+          const count = 1 + Math.floor(Math.random()*3);
+          for(let k=0;k<count;k++) spawn();
+        }, rateMs);
+      }
+
+      const surpriseBtn = document.getElementById('surpriseBtn');
+      surpriseBtn && surpriseBtn.addEventListener('click', ()=> {
+        surpriseBtn.disabled = true;
+        surpriseBtn.innerText = 'Surprise! 🎉';
+        const D = 4500;
+        burstConfetti(D);
+        startHeartRain(D,110);
+        setTimeout(()=> document.getElementById('extraMessage').style.display = 'block', D);
+        setTimeout(()=> { surpriseBtn.disabled = false; surpriseBtn.innerText = 'Again? 💞' }, D+350);
+      });
+    })();
+
+    /* ---------- final safe guards ---------- */
+    // prevent horizontal overflow caused by accidental transforms
+    window.addEventListener('resize', ()=> { document.body.style.overflowX = 'hidden' });
+    document.addEventListener('touchmove', ()=> {} , {passive:true});
+  </script>
+</body>
+</html>
